@@ -97,8 +97,10 @@ void RGB_Matrix::drawFrame()
 	for (uint8_t scan = 0; scan < PANEL_SCAN_N; scan++)
 	{
 		// Row select
-		digitalWrite(_line_a, !!(scan & B00000001));
-		digitalWrite(_line_b, !!(scan & B00000010));
+		BitSetFast(PORTD, 7, !!(scan & B00000001));
+		BitSetFast(PORTD, 6, !!(scan & B00000010));
+		//digitalWrite(_line_a, !!(scan & B00000001));
+		//digitalWrite(_line_b, !!(scan & B00000010));
 
 		for (uint8_t panels_h = 0; panels_h < _drawSizeY / PANEL_SIZE_Y; panels_h++)
 		{
@@ -131,26 +133,24 @@ void RGB_Matrix::drawFrame()
 		//digitalWrite(_lat, HIGH);
 		//digitalWrite(_lat, LOW);
 
-		// Latch pin HIGH, LOW
+		// Latch pin: HIGH, then LOW
 		PORTB |= B00001000;
 		PORTB &= ~B00001000;
 
 		//digitalWrite(_oe, LOW);
+		//delayMicroseconds(_brightness);
+		//digitalWrite(_oe, HIGH);
 
-		// OE pin LOW, HIGH (Inverted)
+		// OE (Output Enable) pin: LOW, then HIGH (Inverted)
 		PORTB &= ~B00100000;
 		delayMicroseconds(_brightness);
 		PORTB |= B00100000;
-
-		//digitalWrite(_oe, HIGH);
 	}
 }
 
-void RGB_Matrix::setFont(uint8_t w, uint8_t h, const unsigned char * font)
+void RGB_Matrix::setFont(Font font)
 {
-	_font.char_width = w;
-	_font.char_height = h;
-	_font.font = font;
+	_font = font;
 }
 
 bool RGB_Matrix::setCursor(unsigned int x, unsigned int y)
@@ -192,34 +192,34 @@ void RGB_Matrix::drawPixel(unsigned int x, unsigned int y, Color color)
 
 void RGB_Matrix::drawChar(unsigned int x, unsigned int y, char c, Color color)
 {
-	if ((y + _font.char_height) >= _drawSizeY)
-		return;
+	//if ((y + _font.char_height) >= _drawSizeY)
+	//	return;
 
-	if ((x + _font.char_width) >= _drawSizeX)
-		return;
+	//if ((x + _font.char_width) >= _drawSizeX)
+	//	return;
 
-	uint8_t i, j;
+	uint8_t i, bit;
 	for (i = 0; i < _font.char_width; i++)
 	{
 		uint8_t d = pgm_read_ptr(_font.font + (c * _font.char_width) + i);
-		uint8_t j;
-		for (j = 0; j < 8; j++)
+		uint8_t bit;
+		for (bit = 0; bit < _font.char_height; bit++)
 		{
-			if (d & (B00000001 << j))
+			if (d & (B00000001 << bit))
 			{
-				drawPixel(x + i, y + j, color);
+				drawPixel(x + i, y + bit, color);
 			}
 			else
 			{
-				drawPixel(x + i, y + j, black);
+				drawPixel(x + i, y + bit, black);
 			}
 		}
 	}
 
-	// Add bottom padding (Horisontal blank line)
-	for (j = 0; j < 8; j++)
+	// Add right space (Vertical blank line)
+	for (bit = 0; bit < _font.char_height; bit++)
 	{
-		drawPixel(x + _font.char_width, y + j, black);
+		drawPixel(x + _font.char_width, y + bit, black);
 	}
 }
 
@@ -426,6 +426,7 @@ void RGB_Matrix::drawFillCircle(unsigned int x, unsigned int y, unsigned int r, 
 	}
 }
 
+#ifdef DEBUG
 void RGB_Matrix::dumpBuffer(char color)
 {
 	Serial.println(F("################"));
@@ -454,3 +455,4 @@ void RGB_Matrix::dumpBuffer(char color)
 
 	Serial.println(F("\n################"));
 }
+#endif // DEBUG

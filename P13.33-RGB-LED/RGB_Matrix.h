@@ -9,6 +9,13 @@
 #define PANEL_SIZE_X	24
 #define PANEL_SIZE_Y	12
 
+struct Font
+{
+	uint8_t char_width;
+	uint8_t char_height;
+	const unsigned char * font;
+};
+
 class RGB_Matrix
 {
 public:
@@ -27,13 +34,6 @@ public:
 		white,	// 0x07 = B0111
 	};
 
-	struct Font
-	{
-		uint8_t char_width;
-		uint8_t char_height;
-		const unsigned char * font;
-	};
-
 	RGB_Matrix(uint8_t width, uint8_t height);
 	~RGB_Matrix();
 	
@@ -44,7 +44,7 @@ public:
 	void init();
 	void drawFrame();
 
-	void setFont(uint8_t w, uint8_t h, const unsigned char * font);
+	void setFont(Font font);
 	void setBrightness(uint8_t brightness);
 
 	bool setCursor(unsigned int x, unsigned int y);

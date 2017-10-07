@@ -61,11 +61,12 @@ void setup() {
 #ifdef DEBUG
 	Serial.begin(115200);
 #endif // DEBUG
+	rtc.begin(DateTime(F(__DATE__), F(__TIME__)));
 
 	//panel.init(PIN_CLK, PIN_LATCH, PIN_OE, PIN_LINE_A, PIN_LINE_B, PIN_RED, PIN_GREEN, PIN_BLUE);
 	panel.init();
 	panel.setBrightness(20);	// 25 if not set (Default)
-	panel.setFont(5, 8, font5x8);
+	panel.setFont(font5x8);
 
 	/*
 	// Color test pattern
@@ -83,11 +84,9 @@ void setup() {
 	panel.drawRect(0, 0, panel.Width(), panel.Height(), panel.blue);
 
 	// Set date/time to scketch upload date
-	rtc.begin(DateTime(F(__DATE__), F(__TIME__)));
 }
 
 void loop() {
-
 	if (millis() > timer_delay) {
 		//char buffer[8];
 		//panel.drawString(12, 2, itoa(millis() / 1000, buffer, 10), panel.green);
@@ -99,8 +98,6 @@ void loop() {
 
 		timer_delay = millis() + TIMER_DELAY - (millis() % TIMER_DELAY);
 	}
-
-
 
 #ifdef DEBUG
 	fps_start = millis();
