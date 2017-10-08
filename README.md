@@ -1,11 +1,11 @@
-## This is a library for control P13.33-3S-1R1G1B-24X12 panel.
+# This is a library for control P13.33-3S-1R1G1B-24X12 panel.
 
-# Panel info:
+## Panel info:
 * Interface: HUB08 (RGB)
 * Main control chip: LeadASIC PR4538
 * Shift registers chips: JXI5020 (16 bit / like 2x 74HC245)
 
-# Lib features:
+## Lib features:
 * Draw pixels
 * Draw text
 * Draw primitives (Square, Rectangle, lines)
@@ -13,7 +13,7 @@
 * Heavy optimized! Pins are hardcoded (Arduino NANO)
 * Upto 470 fps with one panel. ~250 fps with two.
 
-# Arduino nano pinouts:
+## Arduino nano pinouts:
 `CLK = 12;
 LAT = 11;
 OE = 13;
@@ -25,7 +25,7 @@ B1 = 10;
 C, D, RB1 - not used.
 GND to ground (-).`
 
-# HUB08 layout:
+## HUB08 layout:
 `	GND		A
 	GND		B
 	GND		C
@@ -36,7 +36,7 @@ GND to ground (-).`
 	GND		CLK`
 
 
-## TODO:
+# TODO:
 [ ] Add more colors (RGB332 or RGB565 format for 256 and 65k colors)
 [ ] Draw frames in interrupt mode (For max performance)
 [ ] Define connection pins in Init() function like before.
