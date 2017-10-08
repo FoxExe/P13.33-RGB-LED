@@ -39,8 +39,10 @@
 
 
 # TODO:
-- [ ] Add more colors (RGB332 or RGB565 format for 256 and 65k colors)
+- [X] Add more colors. Done: 256 colors supported (RGB332 format)
+- [ ] More realistic colors
 - [ ] Draw frames in interrupt mode (For max performance)
+- [ ] DrawImage() implementation
 - [ ] Define connection pins in Init() function like before.
-- [ ] Custom font sizes
+- [ ] Custom font
 - [ ] Optimisation...
