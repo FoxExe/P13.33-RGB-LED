@@ -10,7 +10,9 @@
 * Draw text
 * Draw primitives (Square, Rectangle, lines)
 * Supported 8 colors: Black, White, Red, Green, Blue, Cyan, Magenta, Yellow.
-* Heavy optimized! Pins are hardcoded (Arduino NANO)
+* Supported different Fonts
+* Any panel count (Upto 9 panels with ~50 FPS)
+* Heavy optimized! Pins are hardcoded (Arduino-328 based chips, like Nano or Pro)
 * Upto 470 fps with one panel. ~250 fps with two.
 
 ## Arduino nano pinouts:
@@ -40,4 +42,5 @@ GND to ground (-).`
 [ ] Add more colors (RGB332 or RGB565 format for 256 and 65k colors)
 [ ] Draw frames in interrupt mode (For max performance)
 [ ] Define connection pins in Init() function like before.
+[ ] Custom font sizes
 [ ] Optimisation...
