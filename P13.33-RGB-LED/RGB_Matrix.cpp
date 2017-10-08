@@ -16,7 +16,7 @@ RGB_Matrix::RGB_Matrix(uint8_t width, uint8_t height)
 	_drawSizeY = height;
 	unsigned int arraySize = width / 8 * height;	// Compress every 8 horisontal pixels to 1 byte (8 bit)
 
-	_frame_buffer_r = new uint8_t[arraySize]{ 0, };
+	_frame_buffer_r = new uint8_t[arraySize]{ 0, };	// Set all to zero
 	_frame_buffer_g = new uint8_t[arraySize]{ 0, };
 	_frame_buffer_b = new uint8_t[arraySize]{ 0, };
 }
@@ -85,8 +85,8 @@ void RGB_Matrix::init()
 	// PORTD = Ports: 7, 6, 5, 4, 3, 2, 1, 0		(Digital)
 	// DDRB -> Data Direction Register B (Set Input/Output mode)
 	//DDRD  |= B11000000;		// Set 6 and 7 to output
-	//PORTD &= ~B11000000;	// Set 6 and 7 LOW
-	//DDRB  = B00111111;		// Set 13 to 8 output
+	//PORTD &= ~B11000000;		// Set 6 and 7 to LOW
+	//DDRB  = B00111111;		// Set 13...8 to output
 	//PORTB = B00100000;		// Set OE to HIGH (Because its inverted)
 }
 
@@ -101,6 +101,7 @@ void RGB_Matrix::drawFrame()
 		BitSetFast(PORTD, 6, !!(scan & B00000010));
 		//digitalWrite(_line_a, !!(scan & B00000001));
 		//digitalWrite(_line_b, !!(scan & B00000010));
+
 
 		for (uint8_t panels_h = 0; panels_h < _drawSizeY / PANEL_SIZE_Y; panels_h++)
 		{
@@ -141,10 +142,9 @@ void RGB_Matrix::drawFrame()
 		//delayMicroseconds(_brightness);
 		//digitalWrite(_oe, HIGH);
 
-		// OE (Output Enable) pin: LOW, then HIGH (Inverted)
-		PORTB &= ~B00100000;
+		PORTB &= ~B00100000;	// OE on (LOW)
 		delayMicroseconds(_brightness);
-		PORTB |= B00100000;
+		PORTB |= B00100000;		// OE off (HIGH)
 	}
 }
 
