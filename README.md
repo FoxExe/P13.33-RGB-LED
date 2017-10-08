@@ -16,31 +16,31 @@
 * Upto 470 fps with one panel. ~250 fps with two.
 
 ## Arduino nano pinouts:
-`CLK = 12;
-LAT = 11;
-OE = 13;
-A = 7;
-B = 6;
-RA1 = 8;
-G1 = 9;
-B1 = 10;
-C, D, RB1 - not used.
-GND to ground (-).`
+	CLK = 12;
+	LAT = 11;
+	OE = 13;
+	A = 7;
+	B = 6;
+	RA1 = 8;
+	G1 = 9;
+	B1 = 10;
+	C, D, RB1 - not used.
+	GND to ground (-).
 
 ## HUB08 layout:
-`	GND		A
+	GND		A
 	GND		B
 	GND		C
 	OE		D
 	RA1		G1
 	B1		RB1
 	GND		LAT
-	GND		CLK`
+	GND		CLK
 
 
 # TODO:
-[ ] Add more colors (RGB332 or RGB565 format for 256 and 65k colors)
-[ ] Draw frames in interrupt mode (For max performance)
-[ ] Define connection pins in Init() function like before.
-[ ] Custom font sizes
-[ ] Optimisation...
+- [ ] Add more colors (RGB332 or RGB565 format for 256 and 65k colors)
+- [ ] Draw frames in interrupt mode (For max performance)
+- [ ] Define connection pins in Init() function like before.
+- [ ] Custom font sizes
+- [ ] Optimisation...
