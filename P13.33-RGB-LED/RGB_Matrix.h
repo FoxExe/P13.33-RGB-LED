@@ -71,6 +71,8 @@ public:
 	void drawChar(unsigned int x, unsigned int y, char c, uint8_t color);
 	void drawString(unsigned int x, unsigned int y, char *string, uint8_t color);
 	void drawString(unsigned int x, unsigned int y, const char *string, uint8_t color);
+	void drawString(unsigned int x, unsigned int y, const __FlashStringHelper *string, uint8_t color);
+
 	void drawImage(unsigned int x, unsigned int y, unsigned int w, unsigned int h, char * bitmap, uint8_t color);
 
 	void drawLine(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, uint8_t color);

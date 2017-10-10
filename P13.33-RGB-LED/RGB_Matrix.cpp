@@ -203,10 +203,10 @@ void RGB_Matrix::drawPixel(unsigned int x, unsigned int y, uint8_t color)
 
 void RGB_Matrix::drawChar(unsigned int x, unsigned int y, char c, uint8_t color)
 {
-	//if ((y + _font.char_height) >= _drawSizeY)
+	//if ((y + _font.char_height) >= _drawSizeY - 1)	// Remove padding
 	//	return;
 
-	//if ((x + _font.char_width) >= _drawSizeX)
+	//if ((x + _font.char_width) >= _drawSizeX - 1)
 	//	return;
 
 	uint8_t i, bit;
@@ -232,6 +232,7 @@ void RGB_Matrix::drawChar(unsigned int x, unsigned int y, char c, uint8_t color)
 	{
 		drawPixel(x + _font.char_width, y + bit, 0x00);	// Empty / Black
 	}
+
 	// TODO: Add bottom space?
 }
 
@@ -243,6 +244,20 @@ void RGB_Matrix::drawString(unsigned int x, unsigned int y, const char *string, 
 	while (1)
 	{
 		char c = (*string++);
+		if (!c)
+			return;
+		_drawChar(c, color);
+	}
+}
+
+void RGB_Matrix::drawString(unsigned int x, unsigned int y, const __FlashStringHelper * string, uint8_t color)
+{
+	if (!setCursor(x, y))
+		return;
+
+	PGM_P p = reinterpret_cast<PGM_P>(string);
+	while (1) {
+		unsigned char c = pgm_read_byte(p++);
 		if (!c)
 			return;
 		_drawChar(c, color);
