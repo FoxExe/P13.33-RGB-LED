@@ -1,11 +1,11 @@
 # This is a library for control P13.33-3S-1R1G1B-24X12 panel.
 
-![rgb_led_panel-256-colors](https://user-images.githubusercontent.com/3135063/31408403-d60eb444-ae21-11e7-8faa-995eb9f5a869.jpg)
-
 ## Panel info:
 * Interface: HUB08 (RGB)
 * Main control chip: LeadASIC PR4538
 * Shift registers chips: JXI5020 (16 bit / like 2x 74HC245)
+
+![rgb_led_panel-256-colors2](https://user-images.githubusercontent.com/3135063/31408538-5ef9a728-ae22-11e7-9c12-78d0051538ab.jpg)
 
 ## Lib features:
 * Draw pixels
