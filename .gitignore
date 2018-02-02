@@ -1,6 +1,5 @@
 *~
 *.[oa]
 /.vs
-/Debug
-/P13.33-RGB-LED/__vm
-/P13.33-RGB-LED/Debug
+__vm
+Debug
