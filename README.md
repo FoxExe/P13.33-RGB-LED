@@ -41,8 +41,8 @@
 
 
 # TODO:
-- [ ] Add more colors (RGB332 or RGB565 format for 256 and 65k colors)
-- [ ] Draw frames in interrupt mode (For max performance)
+- [x] Add more colors (RGB332 or RGB565 format for 256 and 65k colors)
+- [x] Draw frames in interrupt mode (For max performance)
 - [ ] Define connection pins in Init() function like before.
 - [ ] Custom font sizes
 - [ ] Optimisation...
