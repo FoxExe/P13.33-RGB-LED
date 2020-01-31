@@ -5,15 +5,14 @@
 * Main control chip: LeadASIC PR4538
 * Shift registers chips: JXI5020 (16 bit / like 2x 74HC245)
 
+![rgb_led_panel-256-colors2](https://user-images.githubusercontent.com/3135063/31408538-5ef9a728-ae22-11e7-9c12-78d0051538ab.jpg)
+
 ## Lib features:
-* Draw pixels
+* Draw pixels (Base color or 256-colors)
 * Draw text
 * Draw primitives (Square, Rectangle, lines)
-* Supported 8 colors: Black, White, Red, Green, Blue, Cyan, Magenta, Yellow.
-* Supported different Fonts
-* Any panel count (Upto 9 panels with ~50 FPS)
 * Heavy optimized! Pins are hardcoded (Arduino-328 based chips, like Nano or Pro)
-* Upto 470 fps with one panel. ~250 fps with two.
+* 500-600 FPS for one panel, ~300 for two, but see flickers.
 
 ## Arduino nano pinouts:
 	CLK = 12;
@@ -39,10 +38,8 @@
 
 
 # TODO:
-- [X] Add more colors. Done: 256 colors supported (RGB332 format)
-- [ ] More realistic colors
-- [ ] Draw frames in interrupt mode (For max performance)
-- [ ] DrawImage() implementation
+- [x] Add more colors (RGB332 or RGB565 format for 256 and 65k colors)
+- [x] Draw frames in interrupt mode (For max performance)
 - [ ] Define connection pins in Init() function like before.
-- [ ] Custom font
+- [ ] Custom font sizes
 - [ ] Optimisation...

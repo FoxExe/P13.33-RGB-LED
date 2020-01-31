@@ -1,0 +1,24 @@
+{
+  "name": "RGBLed-HUB08",
+  "keywords": "RGB, led, hub08",
+  "description": "China RGB led panel P13.33-3S-1R1G1B-24X12",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/FoxExe/P13.33-RGB-LED"
+  },
+  "version": "1.0.0",
+  "frameworks": "arduino",
+  "platforms": [
+    "atmelavr",
+    "atmelsam",
+    "espressif8266"
+  ],
+  "export": {
+    "exclude": [
+      "tests",
+      "Documentation",
+      "Doxyfile"
+    ]
+  }
+}
