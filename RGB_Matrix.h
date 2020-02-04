@@ -25,7 +25,9 @@ struct Font
 {
 	uint8_t char_width;
 	uint8_t char_height;
-	const unsigned char *font;
+	uint8_t space_right;
+	uint8_t space_bottom;
+	const uint8_t *data;
 };
 
 enum Color : uint8_t
@@ -51,6 +53,9 @@ public:
 
 	uint8_t Width();
 	uint8_t Height();
+
+	uint8_t CharWidth();	// Font char size
+	uint8_t CharHeight();
 
 	//void init(uint8_t clk, uint8_t lat, uint8_t oe, uint8_t line_a, uint8_t line_b, uint8_t pin_r, uint8_t pin_g, uint8_t pin_b);
 	void init();
@@ -84,6 +89,7 @@ public:
 private:
 	uint8_t _cursor_x;
 	uint8_t _cursor_y;
+	uint8_t _cursor_x_start;
 	uint8_t _drawSizeX;
 	uint8_t _drawSizeY;
 

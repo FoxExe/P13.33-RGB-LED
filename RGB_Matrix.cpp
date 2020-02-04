@@ -220,10 +220,6 @@ void RGB_Matrix::drawNextFrameLine()
 
 	PORTB &= ~B00101000; // LE + OE signal
 
-	//PORTB &= ~B00100000; // OE on (LOW)
-	//delayMicroseconds(50);
-	//PORTB |= B00100000; // OE off (HIGH)
-
 	//Serial.println();
 	_busy = false;
 }
@@ -231,18 +227,17 @@ void RGB_Matrix::drawNextFrameLine()
 void RGB_Matrix::clear()
 {
 	fillScreen(Color_Black);
-	/*
-	memset(_frame_buffer, Color_Black, _drawSizeX * _drawSizeY);
-	for (int pos = 0; pos < _drawSizeX * _drawSizeY; pos++)
-	{
-		_frame_buffer[pos] = Color_Black;
-	}
-	*/
 }
 
 void RGB_Matrix::fillScreen(uint8_t color)
 {
 	memset(_frame_buffer, color, _drawSizeX * _drawSizeY);
+	/*
+	for (int pos = 0; pos < _drawSizeX * _drawSizeY; pos++)
+	{
+		_frame_buffer[pos] = color;
+	}
+	*/
 }
 
 void RGB_Matrix::setFont(Font font)
@@ -250,16 +245,14 @@ void RGB_Matrix::setFont(Font font)
 	_font = font;
 }
 
-bool RGB_Matrix::setCursor(uint8_t x, uint8_t y)
+uint8_t RGB_Matrix::CharWidth()
 {
-	if ((x >= _drawSizeX) || (y >= _drawSizeY))
-		return false;
-	else
-	{
-		_cursor_x = x;
-		_cursor_y = y;
-		return true;
-	}
+	return _font.char_width;
+}
+
+uint8_t RGB_Matrix::CharHeight()
+{
+	return _font.char_height;
 }
 
 uint8_t RGB_Matrix::ColorFromRGB(uint8_t r, uint8_t g, uint8_t b)
@@ -342,6 +335,19 @@ uint8_t RGB_Matrix::ColorFromHSV(long hue, uint8_t sat, uint8_t val, boolean gfl
 }
 #endif
 
+bool RGB_Matrix::setCursor(uint8_t x, uint8_t y)
+{
+	//if ((x >= _drawSizeX) || (y >= _drawSizeY))
+	//	return false;
+	//else
+	//{
+	_cursor_x_start = x;
+	_cursor_x = x;
+	_cursor_y = y;
+	return true;
+	//}
+}
+
 // Set pixel
 void RGB_Matrix::drawPixel(uint8_t x, uint8_t y, uint8_t color)
 {
@@ -355,33 +361,41 @@ void RGB_Matrix::_drawPixel(uint8_t x, uint8_t y, uint8_t color)
 
 void RGB_Matrix::drawChar(uint8_t x, uint8_t y, char c, uint8_t color)
 {
-	//if ((y + _font.char_height) >= _drawSizeY - 1)	// Remove padding
+	// Do not draw behind screen
+	//if (x + _font.char_width > _drawSizeX || y + _font.char_height > _drawSizeY)
 	//	return;
 
-	//if ((x + _font.char_width) >= _drawSizeX - 1)
-	//	return;
+	uint32_t start_bit = c * _font.char_width * _font.char_height; // char start bit
+	uint32_t start_byte = start_bit / 8;						   // char start byte (sizeof uint8_t = 8)
+	uint8_t start_offset = start_bit % 8;						   // char start offset in byte
+	uint8_t cx, cy, cc;
 
-	uint8_t i, d, bit;
-	for (i = 0; i < _font.char_width; i++)
+	for (cy = 0; cy < _font.char_height; cy++)
 	{
-		d = pgm_read_ptr(_font.font + (c * _font.char_width) + i);
-		for (bit = 0; bit < _font.char_height; bit++)
+		for (cx = 0; cx < _font.char_width; cx++)
 		{
-			if (d & (B00000001 << bit))
+			cc = pgm_read_byte(&_font.data[start_byte]);
+			if (cc & (B10000000 >> start_offset))
+				_drawPixel(x + cx, y + cy, color);
+			else
+				_drawPixel(x + cx, y + cy, 0); // Empty / Black
+
+			if (start_offset == 7)
 			{
-				_drawPixel(x + i, y + bit, color);
+				start_offset = 0;
+				start_byte++;
 			}
 			else
 			{
-				_drawPixel(x + i, y + bit, 0); // Empty / Black
+				start_offset++;
 			}
 		}
-	}
 
-	// Add right space
-	for (bit = 0; bit < _font.char_height; bit++)
-	{
-		_drawPixel(x + _font.char_width, y + bit, 0x00); // Empty / Black
+		// Add right space
+		for (cx = _font.char_width; cx < _font.char_width + _font.space_right; cx++)
+		{
+			_drawPixel(x + cx, y + cy, 0);
+		}
 	}
 }
 
@@ -442,25 +456,29 @@ void RGB_Matrix::drawString(uint8_t x, uint8_t y, char *string, uint8_t color)
 
 void RGB_Matrix::_drawChar(char c, uint8_t color)
 {
-	if (c == '\n' || c == '\r')
+	// Just ignore this symbol
+	if (c == '\r')
+		return;
+
+	if (c == '\n')
 	{
-		_cursor_x = 0;
-		_cursor_y += _font.char_height;
+		_cursor_x = _cursor_x_start;
+		_cursor_y += _font.char_height + _font.space_bottom;
 		if (_cursor_y > _drawSizeY)
-			_cursor_y = 0;
+			return; //NOTE: or better to set "_cursor_y = 0" ?
 	}
 	else
 	{
 		drawChar(_cursor_x, _cursor_y, c, color);
-		_cursor_x += _font.char_width + 1;
+		_cursor_x += _font.char_width + _font.space_right;
 
 		if (_cursor_x + _font.char_width > _drawSizeX)
 		{
-			_cursor_x = 0;
-			_cursor_y += _font.char_height;
+			_cursor_x = _cursor_x_start;
+			_cursor_y += _font.char_height + _font.space_bottom;
 		}
 		if (_cursor_y > _drawSizeY)
-			_cursor_y = 0;
+			return; //NOTE: or better to set "_cursor_y = 0" ?
 	}
 }
 
