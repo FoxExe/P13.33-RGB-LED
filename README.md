@@ -8,14 +8,11 @@
 ![rgb_led_panel-256-colors2](https://user-images.githubusercontent.com/3135063/31408538-5ef9a728-ae22-11e7-9c12-78d0051538ab.jpg)
 
 ## Lib features:
-* Draw pixels
+* Draw pixels (Base color or 256-colors)
 * Draw text
 * Draw primitives (Square, Rectangle, lines)
-* Supported 8 colors: Black, White, Red, Green, Blue, Cyan, Magenta, Yellow.
-* Supported different Fonts
-* Any panel count (Upto 9 panels with ~50 FPS)
 * Heavy optimized! Pins are hardcoded (Arduino-328 based chips, like Nano or Pro)
-* Upto 470 fps with one panel. ~250 fps with two.
+* 500-600 FPS for one panel, ~300 for two, but see flickers.
 
 ## Arduino nano pinouts:
 	CLK = 12;
