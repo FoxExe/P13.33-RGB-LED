@@ -7,24 +7,23 @@
 
 ![rgb_led_panel-256-colors2](https://user-images.githubusercontent.com/3135063/31408538-5ef9a728-ae22-11e7-9c12-78d0051538ab.jpg)
 
-## Lib features:
-* Draw pixels (Base color or 256-colors)
-* Draw text
-* Draw primitives (Square, Rectangle, lines)
-* Heavy optimized! Pins are hardcoded (Arduino-328 based chips, like Nano or Pro)
-* 500-600 FPS for one panel, ~300 for two, but see flickers.
+## Features:
+* Support 255 colors (RGB format: 332)
+* Depends/Use Adafruit GFX library
+* GPIO hardcoded for Arduino Pro Mini (Need for heavy optimisation)
+* Flickers if use more than 1 panel :(
 
 ## Arduino nano pinouts:
-	CLK = 12;
-	LAT = 11;
-	OE = 13;
-	A = 7;
-	B = 6;
-	RA1 = 8;
-	G1 = 9;
-	B1 = 10;
-	C, D, RB1 - not used.
-	GND to ground (-).
+	CLK	->	12
+	LAT	->	11
+	OE	->	13
+	A	->	7
+	B	->	6
+	RA1	->	8
+	G1	->	9
+	B1	->	10
+	GND	->	GND
+	C, D, RB1 -> not connected
 
 ## HUB08 layout:
 	GND		A
@@ -36,10 +35,13 @@
 	GND		LAT
 	GND		CLK
 
+# Notes:
+* Uncomment `USE_INTERRUPT` and `LINE_TIME` for use interrupts for draw frames (Timer delay)
+* Uncomment `USE_INTERRUPT_ALT` and `LINE_TIME_ALT` for alternative interrupt configuration (Timer overflow)
 
 # TODO:
-- [x] Add more colors (RGB332 or RGB565 format for 256 and 65k colors)
-- [x] Draw frames in interrupt mode (For max performance)
-- [ ] Define connection pins in Init() function like before.
-- [ ] Custom font sizes
+- [x] 255 (or more) colors support.
+- [x] Use interrupts to get rid of flickering.
+- [ ] Allow to use different GPIO pins
+- [ ] Not understand why, but inside loop() its runs faster, than in interrupt...
 - [ ] Optimisation...

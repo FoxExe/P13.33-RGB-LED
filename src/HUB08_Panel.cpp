@@ -128,7 +128,7 @@ void HUB08_Panel::begin() {
 	 */
 	TCCR1B |= (1 << WGM12);		// Turn ON CTC
 	TCCR1B |= _BV(CS12);		// Delimeter: 256
-	OCR1A = 52 * ((WIDTH / PANEL_SIZE_X) * (HEIGHT / PANEL_SIZE_Y)); // 27 = ~360 FPS on two panels (95% CPU load). More = less FPS, but brighter
+	OCR1A = LINE_TIME_ALT * ((WIDTH / PANEL_SIZE_X) * (HEIGHT / PANEL_SIZE_Y)); // 27 = ~360 FPS on two panels (95% CPU load). More = less FPS, but brighter
 	TCNT1 = 0;																  // Reset timer
 	TIFR1 |= _BV(OCF1A);   // clear any pending interrupts
 	TIMSK1 |= _BV(OCIE1A); // enable the output compare interrupt

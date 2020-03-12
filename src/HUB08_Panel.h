@@ -13,6 +13,7 @@
 //#define LINE_TIME 800	// Tiks left for primary job (Code inside loop() function)
 
 //#define USE_INTERRUPT_ALT
+//#define LINE_TIME_ALT 52
 
 
 enum Color : uint16_t
