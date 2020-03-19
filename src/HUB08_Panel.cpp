@@ -1,5 +1,8 @@
 #include "HUB08_Panel.h"
-//#include "gamma.h"
+
+#if defined(ENAMLE_HSV)
+	#include "gamma.h"
+#endif
 
 static HUB08_Panel *activePanel = NULL;
 
@@ -31,6 +34,52 @@ uint16_t HUB08_Panel::Color_From_RGB(uint8_t r, uint8_t g, uint8_t b) {
 uint16_t HUB08_Panel::Color_From_332(uint8_t c) {
 	return (c & B11100000) << 8 | (c & B00011100) << 6 | (c & B00000011) << 3;
 }
+
+#if defined(ENAMLE_HSV)
+uint16_t HUB08_Panel::Color_From_HSV(long hue, uint8_t sat, uint8_t val, boolean gflag) {
+	uint8_t  r, g, b, lo;
+	uint16_t s1, v1;
+
+	// Hue
+	hue %= 1536;              // -1535 to +1535
+	if (hue < 0) hue += 1536; //     0 to +1535
+	lo = hue & 255;           // Low byte  = primary/secondary color mix
+	switch (hue >> 8) {       // High byte = sextant of colorwheel
+		case 0 : r = 255     ; g =  lo     ; b =   0     ; break; // R to Y
+		case 1 : r = 255 - lo; g = 255     ; b =   0     ; break; // Y to G
+		case 2 : r =   0     ; g = 255     ; b =  lo     ; break; // G to C
+		case 3 : r =   0     ; g = 255 - lo; b = 255     ; break; // C to B
+		case 4 : r =  lo     ; g =   0     ; b = 255     ; break; // B to M
+		default: r = 255     ; g =   0     ; b = 255 - lo; break; // M to R
+	}
+
+	// Saturation: add 1 so range is 1 to 256, allowig a quick shift operation
+	// on the result rather than a costly divide, while the type upgrade to int
+	// avoids repeated type conversions in both directions.
+	s1 = sat + 1;
+	r  = 255 - (((255 - r) * s1) >> 8);
+	g  = 255 - (((255 - g) * s1) >> 8);
+	b  = 255 - (((255 - b) * s1) >> 8);
+
+	// Value (brightness) & 16-bit color reduction: similar to above, add 1
+	// to allow shifts, and upgrade to int makes other conversions implicit.
+	v1 = val + 1;
+	if (gflag) {	// Gamma-corrected color?
+		r = pgm_read_byte(&gamma_table[(r * v1) >> 8]); // Gamma correction table maps
+		g = pgm_read_byte(&gamma_table[(g * v1) >> 8]); // 8-bit input to 4-bit output
+		b = pgm_read_byte(&gamma_table[(b * v1) >> 8]);
+	} else { // linear (uncorrected) color
+		r = (r * v1) >> 12; // 4-bit results
+		g = (g * v1) >> 12;
+		b = (b * v1) >> 12;
+	}
+
+	return
+		(r << 12) | ((r & 0x8) << 8) | // 4/4/4 -> 5/6/5
+		(g <<  7) | ((g & 0xC) << 3) |
+		(b <<  1) | ( b        >> 3);
+}
+#endif
 
 void HUB08_Panel::drawPixel(int16_t x, int16_t y, uint16_t color) {
 	if ((x < 0) || (y < 0) || (x >= _width) || (y >= _height))
@@ -116,26 +165,7 @@ void HUB08_Panel::begin() {
 	PORTD |= B00000000;	// Port D: Data Register / Output (1 = High, 0 = Low)
 	//PIND = B00000000;	// Port D: Inputs Pins Register (read only)
 
-#ifdef USE_INTERRUPT_ALT
-	cli();		// Disable interrupts
-	TCCR1A = 0; // Reset registers
-	TCCR1B = 0;
-	/* Timer count calculation example:
-	 * 16000000/1024/800 = 19,53125
-	 * 16000000/256/600  = 104,1666  (600 Hz / 3 lines = 200 FPS)
-	 * 16000000/256/900  = 69,44444  (900 Hz / 3 lines = 300 FPS)
-	 * 16000000/256/1200 = 52,08333  (1200 Hz / 3 lines = 400 FPS)
-	 */
-	TCCR1B |= (1 << WGM12);		// Turn ON CTC
-	TCCR1B |= _BV(CS12);		// Delimeter: 256
-	OCR1A = LINE_TIME_ALT * ((WIDTH / PANEL_SIZE_X) * (HEIGHT / PANEL_SIZE_Y)); // 27 = ~360 FPS on two panels (95% CPU load). More = less FPS, but brighter
-	TCNT1 = 0;																  // Reset timer
-	TIFR1 |= _BV(OCF1A);   // clear any pending interrupts
-	TIMSK1 |= _BV(OCIE1A); // enable the output compare interrupt
-	sei(); // Enable interrupts
-#endif
-
-#ifdef USE_INTERRUPT
+#if defined(USE_INTERRUPT) && !defined(USE_INTERRUPT_ALT)
 	cli();		// Disable interrupts
 	TCCR1A  = _BV(WGM11); // Mode 14 (fast PWM), OC1A off
 	TCCR1B  = _BV(WGM13) | _BV(WGM12) | _BV(CS10); // Mode 14, no prescale
@@ -143,9 +173,43 @@ void HUB08_Panel::begin() {
 	TIMSK1 |= _BV(TOIE1); // Enable Timer1 interrupt
 	sei();                // Enable global interrupts
 #endif //USE_INTERRUPT
+
+#if defined(USE_INTERRUPT_ALT) && !defined(USE_INTERRUPT)
+	// Reset timer1 interrupts
+	TCCR1A = 0; 
+	TCCR1B = 0;
+
+	// Enable CTC mode and set prescaler to 1024
+	bitWrite(TCCR1B, CS12, 1); 
+	bitWrite(TCCR1B, CS11, 0);
+	bitWrite(TCCR1B, CS10, 1); 
+
+	// 16MHz CPU speed / Delimeter 1024 / 800 Hz (800Hz / 3 ScanLine = ~266 FPS)
+	OCR1A = F_CPU / 1024 / LINE_TIME_ALT;
+
+	bitWrite(TCCR1B, WGM12, 1);		// Reset counter
+	bitWrite(TIMSK1, OCIE1A, 1);	// Start timerinterrupt
+
+	sei();
+/*
+	cli();		// Disable interrupts
+	TCCR1A = 0; // Reset registers
+	TCCR1B = 0;
+	TCCR1B |= _BV(WGM12);		// Turn ON CTC
+	TCCR1B |= _BV(CS12);		// Delimeter: 256
+	OCR1A = 52 * ((WIDTH / PANEL_SIZE_X) * (HEIGHT / PANEL_SIZE_Y));
+	TCNT1 = 0;
+	TIFR1 |= _BV(OCF1A);   // clear any pending interrupts
+	TIMSK1 |= _BV(OCIE1A); // enable the output compare interrupt
+	sei(); // Enable interrupts
+*/
+#endif
+
 }
 
 void HUB08_Panel::Update() {
+	if (!_update) return;
+
 	PORTB |= B00100000; // OE off (HIGH)
 
 	PORTD &= B00000011;	// Clear LINE_A/LINE_B
@@ -183,7 +247,6 @@ void HUB08_Panel::Update() {
 	// Calculate next line number
 	if (_line_num == PANEL_SCAN_N - 1) {
 		_line_num = 0;
-		frames++;
 
 		if (_frame_num == 7)
 			_frame_num = 0;
@@ -193,26 +256,13 @@ void HUB08_Panel::Update() {
 		_line_num++;
 
 	// Reset interrupt timer and set next time
-#ifdef USE_INTERRUPT
+#if defined(USE_INTERRUPT)
+	ICR1      = LINE_TIME;
 	TCNT1     = 0;
-	//ICR1      = LINE_TIME;
-#endif //USE_INTERRUPT
-}
-
-// Set interrupt
-#ifdef USE_INTERRUPT_ALT
-ISR (TIMER1_COMPA_vect)
-{
-	activePanel->Update();
-}
+#elif defined(USE_INTERRUPT_ALT)
+	_update = false;
 #endif
-
-#ifdef USE_INTERRUPT
-ISR(TIMER1_OVF_vect, ISR_BLOCK) {
-	activePanel->Update();	// Draw frame (One line)
-	TIFR1 |= TOV1;			// Clear Timer1 interrupt flag
 }
-#endif //USE_INTERRUPT
 
 #ifdef DEBUG
 void HUB08_Panel::dumpBuffer()
@@ -232,3 +282,24 @@ void HUB08_Panel::dumpBuffer()
 	Serial.println();
 }
 #endif // DEBUG
+
+
+#if defined(USE_INTERRUPT) && !defined(USE_INTERRUPT_ALT)
+ISR(TIMER1_OVF_vect, ISR_BLOCK) {
+	activePanel->Update();	// Draw frame (One line)
+	TIFR1 |= TOV1;			// Clear Timer1 interrupt flag
+}
+#endif //USE_INTERRUPT
+
+// Set interrupt
+#if defined(USE_INTERRUPT_ALT) && !defined(USE_INTERRUPT)
+void HUB08_Panel::SetUpdate() {
+	_update = true;
+}
+
+ISR (TIMER1_COMPA_vect)
+{
+	activePanel->SetUpdate();
+}
+#endif
+

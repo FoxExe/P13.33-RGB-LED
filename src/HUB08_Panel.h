@@ -8,13 +8,15 @@
 #define PANEL_SCAN_N 3
 
 //#define DEBUG
+//#define ENAMLE_HSV
 
+// Use delay between scanline
 //#define USE_INTERRUPT
-//#define LINE_TIME 800	// Tiks left for primary job (Code inside loop() function)
+//#define LINE_TIME 1000
 
-//#define USE_INTERRUPT_ALT
-//#define LINE_TIME_ALT 52
-
+// Use timed interrupt
+#define USE_INTERRUPT_ALT
+#define LINE_TIME_ALT 800
 
 enum Color : uint16_t
 {
@@ -41,18 +43,21 @@ class HUB08_Panel: public Adafruit_GFX {
 
 		void begin();
 		void Update();
+		void SetUpdate();
 
-		uint8_t Color_From_565(uint16_t c);
-
+		uint8_t  Color_From_565(uint16_t c);
 		uint16_t Color_From_RGB(uint8_t r, uint8_t g, uint8_t b);
 		uint16_t Color_From_332(uint8_t c);
+#if defined(ENAMLE_HSV)
+		uint16_t Color_From_HSV(long hue, uint8_t sat, uint8_t val, boolean gflag);
+#endif
 
-		int frames = 0;
 #ifdef DEBUG
 		void dumpBuffer();
 #endif
 	private:
 		uint8_t *buffer;
+		bool _update = false;
 		uint8_t _line_num = 0;
 		uint8_t _frame_num = 0;
 		uint8_t _line_map[3] = { B00000000, B10000000, B01000000 };	// LINE A/B pin selector: --, A-, -B
