@@ -15,99 +15,64 @@
 #include <Arduino.h>	// Need for PlatformIO
 
 #include <HUB08_Panel.h>
-//#include <Fonts/FreeMono9pt7b.h>
+//#include <Fonts/FreeSans9pt7b.h>
 
 // One panel size (w/h): 24 x 12
-// How about two?
-HUB08_Panel screen(48, 12);
+HUB08_Panel screen(24, 12);
 
-#define TIMER1_PERIOD 100 // Image update time
-uint32_t timer1 = 0;
-
-// Rainbow. Better to use calculation, but im lazy :)
-uint8_t color_array[] = {
-	B11100000,	// R=8, G=0, B=0
-	B11100100,
-	B11101000,
-	B11101100,
-	B11110000,
-	B11110100,
-	B11111000,
-	B11111100,	// R=8, G=8, B=0
-	B11011100,
-	B10111100,
-	B10011100,
-	B01111100,
-	B01011100,
-	B00111100,
-	B00011100,	// R=0, G=8, B=0
-	B00011100,
-	B00011101,
-	B00011101,
-	B00011110,
-	B00011110,
-	B00011111,
-	B00011111,	// R=0, G=8, B=8
-	B00011011,
-	B00010111,
-	B00010011,
-	B00001111,
-	B00001011,
-	B00000111,
-	B00000011,	// R=0, G=0, B=8
-	B00100011,
-	B01000011,
-	B01100011,
-	B10000011,
-	B10100011,
-	B11000011,
-	B11100011,	// R=8, G=0, B=8
-	B11100011,
-	B11100011,
-	B11100011,
-	B11100010,
-	B11100010,
-	B11100001,
-	B11100001,
-};
+#define TIMER_PERIOD 1000 // Update info on panel every 1 second
+uint32_t timer = 0;
 
 void setup() {
 	screen.begin();
+	screen.setTextColor(Color_Green);
+	//screen.setTextWrap(false); // Allow text to run off right edge
+	//screen.setFont(&FreeSans9pt7b);	// BROCKEN :(
+	screen.setCursor(1, 3);
+	screen.print(F("Hi!"));
 }
 
-uint8_t color_code = 0;
-uint8_t color_offset = 0;
+uint8_t r = 8;	// Start from red
+uint8_t g = 0;
+uint8_t b = 0;
+
+uint8_t nextColor() {
+	if (b == 0 && r > 0) {
+		r--;
+		g++;
+	} else if (r == 0 && g > 0) {
+		g--;
+		b++;
+	} else {
+		b--;
+		r++;
+	}
+
+	return (r << 5) | (g << 2) | (b >> 1);
+}
 
 void loop() {
+#ifdef USE_INTERRUPT_OUT
 	screen.Update();	// Update one line at time (3 line per frame)
+#endif
 
-	if (millis() - timer1 >= TIMER1_PERIOD)
+	if (millis() - timer >= TIMER_PERIOD)
 	{
-		//screen.fillScreen(0);
-		color_code = color_offset;
-
-		for (uint8_t size_x = 0; size_x < screen.width(); size_x++)
+		for (uint8_t x = 0; x < screen.width(); x++)
 		{
-			if (color_code == sizeof(color_array) - 1)
-				color_code = 0;
-			else
-				color_code++;
-
-			screen.drawLine(size_x, 0, size_x, screen.height(), screen.Color_From_332(color_array[color_code]));
-			screen.Update();	// Because not fast enaught
+			screen.drawLine(x, 0, x, screen.height() - 1, nextColor());
+#ifdef USE_INTERRUPT_OUT
+			screen.Update();	// drawLine() not so fast, so need draw frame/line
+#endif
 		}
 
-		if (color_offset == sizeof(color_array) - 1)
-			color_offset = 0;
-		else
-			color_offset++;
+		nextColor();
 
-		// millis() counter overflow protection
 		do
 		{
-			timer1 += TIMER1_PERIOD;
-			if (timer1 < TIMER1_PERIOD)
+			timer += TIMER_PERIOD;
+			if (timer < TIMER_PERIOD)
 				break;
-		} while (timer1 < millis() - TIMER1_PERIOD);
+		} while (timer < millis() - TIMER_PERIOD);
 	}
 }
