@@ -15,28 +15,28 @@
 * STM32 can drive upto 10 panels without any issues.
 
 ## Arduino nano pinouts:
-  HUB08	|  AVR	| STM32
---------|-------|-------
-  CLK	|	12	|  B12
-  LAT	|	11	|  B9
-   OE	|	13	|  B8
-    A	|	6	|  B6
-    B	|	7	|  B7
-  RA1	|	8	|  B13
-   G1	|	9	|  B14
-   B1	|	10	|  B15
+HUB08 |  AVR | STM32
+------|------|-------
+CLK   |  12  |  B12
+LAT   |  11  |  B9
+OE    |  13  |  B8
+A     |  6   |  B6
+B     |  7   |  B7
+RA1   |  8   |  B13
+G1    |  9   |  B14
+B1    |  10  |  B15
 
 ## HUB08 layout:
-Key | Key
-----|----
-GND	|	A
-GND	|	B
-GND	|	C
-OE	|	D
-RA1	|	G1
-B1	|	RB1
-GND	|	LAT
-GND	|	CLK
+Key  |  Key
+-----|-----
+GND  |    A
+GND  |    B
+GND  |    C
+OE   |    D
+RA1  |   G1
+B1   |  RB1
+GND  |  LAT
+GND  |  CLK
 
 # Notes:
 * This library can use Timer2 (AVR) or TIM3 (STM32) for update (turn on) led's on panel. Uncomment on of these defines for this:
